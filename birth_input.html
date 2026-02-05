@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>생년월일 입력</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-wrapper.year {
+            flex: 1.5;
+        }
+
+        label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+
+        input::placeholder {
+            color: #ccc;
+        }
+
+        .error-message {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0051d5;
+        }
+
+        button:active {
+            background: #004bb5;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>생년월일 입력</h1>
+        
+        <div class="input-group">
+            <div class="input-wrapper year">
+                <label for="year">년도</label>
+                <input type="number" id="year" placeholder="YYYY" min="1900" max="2100" maxlength="4">
+            </div>
+            <div class="input-wrapper">
+                <label for="month">월</label>
+                <input type="number" id="month" placeholder="MM" min="1" max="12" maxlength="2">
+            </div>
+            <div class="input-wrapper">
+                <label for="day">일</label>
+                <input type="number" id="day" placeholder="DD" min="1" max="31" maxlength="2">
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <button id="confirmButton">확인</button>
+
+        <div class="debug-info" id="debugInfo"></div>
+    </div>
+
+    <script>
+        // URL 파라미터에서 sdkType 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const sdkType = urlParams.get('sdkType') || 'android';
+
+        const yearInput = document.getElementById('year');
+        const monthInput = document.getElementById('month');
+        const dayInput = document.getElementById('day');
+        const confirmButton = document.getElementById('confirmButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const debugInfo = document.getElementById('debugInfo');
+
+        // 디버그 모드 (개발 시 유용)
+        const isDebug = urlParams.get('debug') === 'true';
+        if (isDebug) {
+            debugInfo.style.display = 'block';
+            debugInfo.textContent = `SDK Type: ${sdkType}`;
+        }
+
+        // 입력 값 자동 포맷팅
+        yearInput.addEventListener('input', function(e) {
+            if (this.value.length > 4) {
+                this.value = this.value.slice(0, 4);
+            }
+        });
+
+        monthInput.addEventListener('input', function(e) {
+            if (this.value.length > 2) {
+                this.value = this.value.slice(0, 2);
+            }
+            if (parseInt(this.value) > 12) {
+                this.value = '12';
+            }
+        });
+
+        dayInput.addEventListener('input', function(e) {
+            if (this.value.length > 2) {
+                this.value = this.value.slice(0, 2);
+            }
+            if (parseInt(this.value) > 31) {
+                this.value = '31';
+            }
+        });
+
+        // Enter 키로 다음 필드로 이동
+        yearInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.length === 4) {
+                monthInput.focus();
+            }
+        });
+
+        monthInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.length > 0) {
+                dayInput.focus();
+            }
+        });
+
+        dayInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.length > 0) {
+                confirmButton.click();
+            }
+        });
+
+        // 유효성 검사
+        function validateDate(year, month, day) {
+            if (!year || !month || !day) {
+                return '모든 필드를 입력해주세요.';
+            }
+
+            const yearNum = parseInt(year);
+            const monthNum = parseInt(month);
+            const dayNum = parseInt(day);
+
+            if (yearNum < 1900 || yearNum > 2100) {
+                return '올바른 년도를 입력해주세요. (1900-2100)';
+            }
+
+            if (monthNum < 1 || monthNum > 12) {
+                return '올바른 월을 입력해주세요. (1-12)';
+            }
+
+            if (dayNum < 1 || dayNum > 31) {
+                return '올바른 일을 입력해주세요. (1-31)';
+            }
+
+            // 실제 날짜 유효성 검사
+            const date = new Date(yearNum, monthNum - 1, dayNum);
+            if (date.getFullYear() !== yearNum || 
+                date.getMonth() !== monthNum - 1 || 
+                date.getDate() !== dayNum) {
+                return '존재하지 않는 날짜입니다.';
+            }
+
+            return null;
+        }
+
+        // YYYYMMDD 형식으로 변환
+        function formatBirthDate(year, month, day) {
+            const paddedMonth = month.padStart(2, '0');
+            const paddedDay = day.padStart(2, '0');
+            return `${year}${paddedMonth}${paddedDay}`;
+        }
+
+        // 네이티브로 결과 전달
+        function sendResultToNative(birthDate) {
+            const result = {
+                code: 1,
+                message: "birthInfo",
+                birth: birthDate
+            };
+            const jsonString = JSON.stringify(result);
+
+            try {
+                switch(sdkType.toLowerCase()) {
+                    case 'android':
+                        if (window.android && window.android.onResultForBirth) {
+                            window.android.onResultForBirth(jsonString);
+                        } else {
+                            console.error('Android bridge not found');
+                            if (isDebug) alert('Android bridge not found\n' + jsonString);
+                        }
+                        break;
+
+                    case 'ios':
+                        if (window.webkit && 
+                            window.webkit.messageHandlers && 
+                            window.webkit.messageHandlers.onResultForBirth) {
+                            window.webkit.messageHandlers.onResultForBirth.postMessage(jsonString);
+                        } else {
+                            console.error('iOS bridge not found');
+                            if (isDebug) alert('iOS bridge not found\n' + jsonString);
+                        }
+                        break;
+
+                    case 'unity':
+                        const parameters = {
+                            method: "onResultForBirth",
+                            data: jsonString
+                        };
+                        window.alert(JSON.stringify(parameters));
+                        break;
+
+                    case 'unreal':
+                        if (window.ue && window.ue.web && window.ue.web.onresultforbirth) {
+                            window.ue.web.onresultforbirth(jsonString);
+                        } else {
+                            console.error('Unreal bridge not found');
+                            if (isDebug) alert('Unreal bridge not found\n' + jsonString);
+                        }
+                        break;
+
+                    default:
+                        console.error('Unknown SDK type: ' + sdkType);
+                        if (isDebug) alert('Unknown SDK type: ' + sdkType + '\n' + jsonString);
+                }
+            } catch (error) {
+                console.error('Error sending result to native:', error);
+                if (isDebug) alert('Error: ' + error.message + '\n' + jsonString);
+            }
+        }
+
+        // 확인 버튼 클릭
+        confirmButton.addEventListener('click', function() {
+            errorMessage.textContent = '';
+
+            const year = yearInput.value.trim();
+            const month = monthInput.value.trim();
+            const day = dayInput.value.trim();
+
+            const error = validateDate(year, month, day);
+            if (error) {
+                errorMessage.textContent = error;
+                return;
+            }
+
+            const birthDate = formatBirthDate(year, month, day);
+            sendResultToNative(birthDate);
+        });
+
+        // 페이지 로드 시 년도 입력에 포커스
+        window.addEventListener('load', function() {
+            yearInput.focus();
+        });
+    </script>
+</body>
+</html>
