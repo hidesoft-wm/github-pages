@@ -435,7 +435,12 @@
                 errorInvalidMonth: "Please enter a valid month (1-12).",
                 errorInvalidDay: "Please enter a valid day (1-31).",
                 errorInvalidDate: "This date does not exist.",
-                dateOrder: ['month', 'day', 'year'] // 미국식: 월/일/년
+                dateOrder: ['month', 'day', 'year'], // 미국식: 월/일/년
+                placeholders: {
+                    day: "Day",
+                    month: "Month",
+                    year: "Year"
+                }
             },
             ko: {
                 pageTitle: "생년월일을 입력해 주세요.",
@@ -450,7 +455,12 @@
                 errorInvalidMonth: "올바른 월을 입력해주세요. (1-12)",
                 errorInvalidDay: "올바른 일을 입력해주세요. (1-31)",
                 errorInvalidDate: "존재하지 않는 날짜입니다.",
-                dateOrder: ['year', 'month', 'day'] // 한국식: 년/월/일
+                dateOrder: ['year', 'month', 'day'], // 한국식: 년/월/일
+                placeholders: {
+                    day: "일",
+                    month: "월",
+                    year: "년"
+                }
             },
             ja: {
                 pageTitle: "生年月日を入力してください。",
@@ -465,7 +475,12 @@
                 errorInvalidMonth: "有効な月を入力してください（1-12）。",
                 errorInvalidDay: "有効な日を入力してください（1-31）。",
                 errorInvalidDate: "この日付は存在しません。",
-                dateOrder: ['year', 'month', 'day'] // 일본식: 년/월/일
+                dateOrder: ['year', 'month', 'day'], // 일본식: 년/월/일
+                placeholders: {
+                    day: "日",
+                    month: "月",
+                    year: "年"
+                }
             },
             pt: {
                 pageTitle: "Por favor, insira sua data de nascimento.",
@@ -480,7 +495,12 @@
                 errorInvalidMonth: "Por favor, insira um mês válido (1-12).",
                 errorInvalidDay: "Por favor, insira um dia válido (1-31).",
                 errorInvalidDate: "Esta data não existe.",
-                dateOrder: ['day', 'month', 'year'] // 포르투갈식: 일/월/년
+                dateOrder: ['day', 'month', 'year'], // 포르투갈식: 일/월/년
+                placeholders: {
+                    day: "Dia",
+                    month: "Mês",
+                    year: "Ano"
+                }
             },
             ru: {
                 pageTitle: "Пожалуйста, введите дату рождения.",
@@ -495,7 +515,12 @@
                 errorInvalidMonth: "Пожалуйста, введите действительный месяц (1-12).",
                 errorInvalidDay: "Пожалуйста, введите действительный день (1-31).",
                 errorInvalidDate: "Эта дата не существует.",
-                dateOrder: ['day', 'month', 'year'] // 러시아식: 일/월/년
+                dateOrder: ['day', 'month', 'year'], // 러시아식: 일/월/년
+                placeholders: {
+                    day: "День",
+                    month: "Месяц",
+                    year: "Год"
+                }
             },
             th: {
                 pageTitle: "กรุณากรอกวันเกิดของคุณ",
@@ -510,7 +535,12 @@
                 errorInvalidMonth: "กรุณากรอกเดือนที่ถูกต้อง (1-12)",
                 errorInvalidDay: "กรุณากรอกวันที่ถูกต้อง (1-31)",
                 errorInvalidDate: "วันที่นี้ไม่มีอยู่จริง",
-                dateOrder: ['day', 'month', 'year'] // 태국식: 일/월/년
+                dateOrder: ['day', 'month', 'year'], // 태국식: 일/월/년
+                placeholders: {
+                    day: "วัน",
+                    month: "เดือน",
+                    year: "ปี"
+                }
             },
             "zh-Hans": {
                 pageTitle: "请输入您的出生日期。",
@@ -525,7 +555,12 @@
                 errorInvalidMonth: "请输入有效的月份（1-12）。",
                 errorInvalidDay: "请输入有效的日期（1-31）。",
                 errorInvalidDate: "此日期不存在。",
-                dateOrder: ['year', 'month', 'day'] // 중국식: 년/월/일
+                dateOrder: ['year', 'month', 'day'], // 중국식: 년/월/일
+                placeholders: {
+                    day: "日",
+                    month: "月",
+                    year: "年"
+                }
             },
             "zh-Hant": {
                 pageTitle: "請輸入您的出生日期。",
@@ -540,7 +575,12 @@
                 errorInvalidMonth: "請輸入有效的月份（1-12）。",
                 errorInvalidDay: "請輸入有效的日期（1-31）。",
                 errorInvalidDate: "此日期不存在。",
-                dateOrder: ['year', 'month', 'day'] // 중국식: 년/월/일
+                dateOrder: ['year', 'month', 'day'], // 중국식: 년/월/일
+                placeholders: {
+                    day: "日",
+                    month: "月",
+                    year: "年"
+                }
             },
             es: {
                 pageTitle: "Por favor, ingrese su fecha de nacimiento.",
@@ -555,7 +595,12 @@
                 errorInvalidMonth: "Por favor, ingrese un mes válido (1-12).",
                 errorInvalidDay: "Por favor, ingrese un día válido (1-31).",
                 errorInvalidDate: "Esta fecha no existe.",
-                dateOrder: ['day', 'month', 'year'] // 스페인식: 일/월/년
+                dateOrder: ['day', 'month', 'year'], // 스페인식: 일/월/년
+                placeholders: {
+                    day: "Día",
+                    month: "Mes",
+                    year: "Año"
+                }
             }
         };
 
@@ -602,6 +647,7 @@
         // 드롭다운 HTML 생성 (언어별 순서에 맞게)
         function createDateInputs() {
             const dateOrder = translations[currentLang].dateOrder;
+            const placeholders = translations[currentLang].placeholders;
             inputGroup.innerHTML = '';
 
             dateOrder.forEach(type => {
@@ -611,10 +657,7 @@
                 const select = document.createElement('select');
                 select.id = type;
 
-                let placeholder = '';
-                if (type === 'day') placeholder = 'DD';
-                else if (type === 'month') placeholder = 'MM';
-                else if (type === 'year') placeholder = 'YYYY';
+                const placeholder = placeholders[type];
 
                 const option = document.createElement('option');
                 option.value = '';
