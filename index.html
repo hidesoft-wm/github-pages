@@ -367,13 +367,23 @@
         const langParam = urlParams.get('lang') || 'en';
         const isDebug = urlParams.get('debug') === 'true';
 
-        // 지원하는 언어 목록
-        const supportedLanguages = ['en', 'ko', 'ja', 'pt', 'ru', 'th', 'zh-Hans', 'zh-Hant', 'es'];
+        // 지원하는 언어 목록 (소문자 버전과 실제 키 매핑)
+        const languageMap = {
+            'en': 'en',
+            'ko': 'ko',
+            'ja': 'ja',
+            'pt': 'pt',
+            'ru': 'ru',
+            'th': 'th',
+            'zh-hans': 'zh-Hans',
+            'zh-hant': 'zh-Hant',
+            'es': 'es'
+        };
         
         // 대소문자 구분 없이 언어 매칭
         function findLanguage(input) {
-            const lowerInput = input.toLowerCase();
-            return supportedLanguages.find(lang => lang.toLowerCase() === lowerInput) || 'en';
+            const normalizedInput = input.toLowerCase();
+            return languageMap[normalizedInput] || 'en';
         }
         
         const currentLang = findLanguage(langParam);
