@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans KR", sans-serif;
             background: #f5f5f5;
             display: flex;
             justify-content: center;
@@ -23,89 +23,132 @@
 
         .container {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 40px;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 60px 40px;
             width: 100%;
-            max-width: 400px;
+            max-width: 100%;
         }
 
         h1 {
-            font-size: 24px;
-            color: #333;
-            margin-bottom: 30px;
+            font-size: 28px;
+            color: #000;
+            margin-bottom: 40px;
             text-align: center;
+            font-weight: 700;
+        }
+
+        .description {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .notice {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .input-label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
         }
 
         .input-group {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 30px;
         }
 
         .input-wrapper {
             flex: 1;
-            display: flex;
-            flex-direction: column;
+            position: relative;
         }
 
-        .input-wrapper.year {
-            flex: 1.5;
-        }
-
-        label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        input {
+        select {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            text-align: center;
+            padding: 18px 45px 18px 20px;
+            border: 1px solid #999;
+            border-radius: 0;
+            font-size: 18px;
+            color: #333;
+            background: white;
+            appearance: none;
+            cursor: pointer;
             transition: border-color 0.3s;
         }
 
-        input:focus {
+        select:focus {
             outline: none;
-            border-color: #007aff;
+            border-color: #333;
         }
 
-        input::placeholder {
-            color: #ccc;
+        .select-arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #666;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: #666;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
         }
 
         .error-message {
             color: #ff3b30;
             font-size: 14px;
-            margin-top: 10px;
+            margin-bottom: 20px;
             text-align: center;
             min-height: 20px;
         }
 
         button {
             width: 100%;
-            padding: 15px;
-            background: #007aff;
+            padding: 20px;
+            background: #333;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 0;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
         }
 
         button:hover {
-            background: #0051d5;
+            background: #000;
         }
 
         button:active {
-            background: #004bb5;
+            background: #000;
         }
 
         button:disabled {
@@ -122,30 +165,58 @@
             color: #666;
             display: none;
         }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .input-group {
+                gap: 10px;
+            }
+
+            select {
+                padding: 15px 40px 15px 15px;
+                font-size: 16px;
+            }
+
+            .select-arrow {
+                right: 15px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 id="pageTitle">Birth Date Input</h1>
+        <h1 id="pageTitle">Please enter your date of birth.</h1>
         
-        <div class="input-group">
-            <div class="input-wrapper year">
-                <label for="year" id="labelYear">Year</label>
-                <input type="number" id="year" placeholder="YYYY" min="1900" max="2100" maxlength="4">
-            </div>
-            <div class="input-wrapper">
-                <label for="month" id="labelMonth">Month</label>
-                <input type="number" id="month" placeholder="MM" min="1" max="12" maxlength="2">
-            </div>
-            <div class="input-wrapper">
-                <label for="day" id="labelDay">Day</label>
-                <input type="number" id="day" placeholder="DD" min="1" max="31" maxlength="2">
-            </div>
+        <div class="description" id="description">
+            This game can only be used by users of a certain age or older.<br>
+            Please enter your accurate date of birth to verify your age for service usage.
+        </div>
+        
+        <div class="notice" id="notice">
+            * Entering inaccurate information or use by minors below the service age may result in account suspension.
+        </div>
+        
+        <div class="input-label" id="inputLabel">Date of Birth (Day/Month/Year)</div>
+        
+        <div class="input-group" id="inputGroup">
+            <!-- 드롭다운 순서는 JavaScript로 동적 생성 -->
+        </div>
+
+        <div class="checkbox-wrapper">
+            <input type="checkbox" id="confirmCheckbox">
+            <label for="confirmCheckbox" id="checkboxLabel">I have verified the above and entered accurate information.</label>
         </div>
 
         <div class="error-message" id="errorMessage"></div>
 
-        <button id="confirmButton">Confirm</button>
+        <button id="confirmButton" disabled>Register</button>
 
         <div class="debug-info" id="debugInfo"></div>
     </div>
@@ -154,112 +225,139 @@
         // 다국어 리소스
         const translations = {
             en: {
-                pageTitle: "Birth Date Input",
-                labelYear: "Year",
-                labelMonth: "Month",
-                labelDay: "Day",
-                confirmButton: "Confirm",
+                pageTitle: "Please enter your date of birth.",
+                description: "This game can only be used by users of a certain age or older.<br>Please enter your accurate date of birth to verify your age for service usage.",
+                notice: "* Entering inaccurate information or use by minors below the service age may result in account suspension.",
+                inputLabel: "Date of Birth (Month/Day/Year)",
+                checkboxLabel: "I have verified the above and entered accurate information.",
+                confirmButton: "Register",
                 errorAllFields: "Please fill in all fields.",
+                errorCheckbox: "Please check the confirmation box.",
                 errorInvalidYear: "Please enter a valid year (1900-2100).",
                 errorInvalidMonth: "Please enter a valid month (1-12).",
                 errorInvalidDay: "Please enter a valid day (1-31).",
-                errorInvalidDate: "This date does not exist."
+                errorInvalidDate: "This date does not exist.",
+                dateOrder: ['month', 'day', 'year'] // 미국식: 월/일/년
             },
             ko: {
-                pageTitle: "생년월일 입력",
-                labelYear: "년도",
-                labelMonth: "월",
-                labelDay: "일",
-                confirmButton: "확인",
+                pageTitle: "생년월일을 입력해 주세요.",
+                description: "본 게임은 특정 연령 이상만 이용할 수 있습니다.<br>서비스 이용 가능 연령을 확인하기 위해 정확한 생년월일을 입력해주세요.",
+                notice: "* 부정확한 정보를 입력하거나, 서비스 이용 가능 연령 미만의 이용자는 계정 이용이 불가능 할 수 있습니다.",
+                inputLabel: "생년월일 (년/월/일)",
+                checkboxLabel: "위 내용을 확인하였으며, 정확한 정보를 입력했습니다.",
+                confirmButton: "등록",
                 errorAllFields: "모든 필드를 입력해주세요.",
+                errorCheckbox: "확인 체크박스를 선택해주세요.",
                 errorInvalidYear: "올바른 년도를 입력해주세요. (1900-2100)",
                 errorInvalidMonth: "올바른 월을 입력해주세요. (1-12)",
                 errorInvalidDay: "올바른 일을 입력해주세요. (1-31)",
-                errorInvalidDate: "존재하지 않는 날짜입니다."
+                errorInvalidDate: "존재하지 않는 날짜입니다.",
+                dateOrder: ['year', 'month', 'day'] // 한국식: 년/월/일
             },
             ja: {
-                pageTitle: "生年月日入力",
-                labelYear: "年",
-                labelMonth: "月",
-                labelDay: "日",
-                confirmButton: "確認",
+                pageTitle: "生年月日を入力してください。",
+                description: "このゲームは特定の年齢以上のユーザーのみ利用できます。<br>サービス利用可能年齢を確認するため、正確な生年月日を入力してください。",
+                notice: "* 不正確な情報を入力したり、サービス利用可能年齢未満の利用者はアカウント利用ができない場合があります。",
+                inputLabel: "生年月日（年/月/日）",
+                checkboxLabel: "上記の内容を確認し、正確な情報を入力しました。",
+                confirmButton: "登録",
                 errorAllFields: "すべてのフィールドを入力してください。",
+                errorCheckbox: "確認チェックボックスを選択してください。",
                 errorInvalidYear: "有効な年を入力してください（1900-2100）。",
                 errorInvalidMonth: "有効な月を入力してください（1-12）。",
                 errorInvalidDay: "有効な日を入力してください（1-31）。",
-                errorInvalidDate: "この日付は存在しません。"
+                errorInvalidDate: "この日付は存在しません。",
+                dateOrder: ['year', 'month', 'day'] // 일본식: 년/월/일
             },
             pt: {
-                pageTitle: "Entrada de Data de Nascimento",
-                labelYear: "Ano",
-                labelMonth: "Mês",
-                labelDay: "Dia",
-                confirmButton: "Confirmar",
+                pageTitle: "Por favor, insira sua data de nascimento.",
+                description: "Este jogo só pode ser usado por usuários de uma certa idade ou mais.<br>Por favor, insira sua data de nascimento precisa para verificar sua idade para uso do serviço.",
+                notice: "* Inserir informações imprecisas ou uso por menores abaixo da idade de serviço pode resultar em suspensão da conta.",
+                inputLabel: "Data de Nascimento (Dia/Mês/Ano)",
+                checkboxLabel: "Verifiquei o acima e inseri informações precisas.",
+                confirmButton: "Registrar",
                 errorAllFields: "Por favor, preencha todos os campos.",
+                errorCheckbox: "Por favor, marque a caixa de confirmação.",
                 errorInvalidYear: "Por favor, insira um ano válido (1900-2100).",
                 errorInvalidMonth: "Por favor, insira um mês válido (1-12).",
                 errorInvalidDay: "Por favor, insira um dia válido (1-31).",
-                errorInvalidDate: "Esta data não existe."
+                errorInvalidDate: "Esta data não existe.",
+                dateOrder: ['day', 'month', 'year'] // 포르투갈식: 일/월/년
             },
             ru: {
-                pageTitle: "Ввод даты рождения",
-                labelYear: "Год",
-                labelMonth: "Месяц",
-                labelDay: "День",
-                confirmButton: "Подтвердить",
+                pageTitle: "Пожалуйста, введите дату рождения.",
+                description: "Эта игра может использоваться только пользователями определенного возраста или старше.<br>Пожалуйста, введите точную дату рождения для проверки возраста для использования сервиса.",
+                notice: "* Ввод неточной информации или использование несовершеннолетними ниже возраста сервиса может привести к приостановке учетной записи.",
+                inputLabel: "Дата рождения (День/Месяц/Год)",
+                checkboxLabel: "Я проверил вышеизложенное и ввел точную информацию.",
+                confirmButton: "Зарегистрировать",
                 errorAllFields: "Пожалуйста, заполните все поля.",
+                errorCheckbox: "Пожалуйста, установите флажок подтверждения.",
                 errorInvalidYear: "Пожалуйста, введите действительный год (1900-2100).",
                 errorInvalidMonth: "Пожалуйста, введите действительный месяц (1-12).",
                 errorInvalidDay: "Пожалуйста, введите действительный день (1-31).",
-                errorInvalidDate: "Эта дата не существует."
+                errorInvalidDate: "Эта дата не существует.",
+                dateOrder: ['day', 'month', 'year'] // 러시아식: 일/월/년
             },
             th: {
-                pageTitle: "กรอกวันเกิด",
-                labelYear: "ปี",
-                labelMonth: "เดือน",
-                labelDay: "วัน",
-                confirmButton: "ยืนยัน",
+                pageTitle: "กรุณากรอกวันเกิดของคุณ",
+                description: "เกมนี้สามารถใช้ได้เฉพาะผู้ใช้ที่มีอายุตามที่กำหนดขึ้นไปเท่านั้น<br>กรุณากรอกวันเกิดที่ถูกต้องเพื่อยืนยันอายุสำหรับการใช้บริการ",
+                notice: "* การกรอกข้อมูลที่ไม่ถูกต้องหรือการใช้งานโดยผู้เยาว์ที่ต่ำกว่าอายุที่กำหนดอาจส่งผลให้บัญชีถูกระงับ",
+                inputLabel: "วันเกิด (วัน/เดือน/ปี)",
+                checkboxLabel: "ฉันได้ยืนยันข้างต้นและกรอกข้อมูลที่ถูกต้อง",
+                confirmButton: "ลงทะเบียน",
                 errorAllFields: "กรุณากรอกข้อมูลให้ครบทุกช่อง",
+                errorCheckbox: "กรุณาเลือกช่องยืนยัน",
                 errorInvalidYear: "กรุณากรอกปีที่ถูกต้อง (1900-2100)",
                 errorInvalidMonth: "กรุณากรอกเดือนที่ถูกต้อง (1-12)",
                 errorInvalidDay: "กรุณากรอกวันที่ถูกต้อง (1-31)",
-                errorInvalidDate: "วันที่นี้ไม่มีอยู่จริง"
+                errorInvalidDate: "วันที่นี้ไม่มีอยู่จริง",
+                dateOrder: ['day', 'month', 'year'] // 태국식: 일/월/년
             },
             "zh-Hans": {
-                pageTitle: "输入出生日期",
-                labelYear: "年",
-                labelMonth: "月",
-                labelDay: "日",
-                confirmButton: "确认",
+                pageTitle: "请输入您的出生日期。",
+                description: "本游戏仅限特定年龄以上的用户使用。<br>请输入准确的出生日期以验证您使用服务的年龄。",
+                notice: "* 输入不准确的信息或低于服务年龄的未成年人使用可能导致账户被停用。",
+                inputLabel: "出生日期（年/月/日）",
+                checkboxLabel: "我已确认以上内容并输入了准确的信息。",
+                confirmButton: "注册",
                 errorAllFields: "请填写所有字段。",
+                errorCheckbox: "请勾选确认框。",
                 errorInvalidYear: "请输入有效的年份（1900-2100）。",
                 errorInvalidMonth: "请输入有效的月份（1-12）。",
                 errorInvalidDay: "请输入有效的日期（1-31）。",
-                errorInvalidDate: "此日期不存在。"
+                errorInvalidDate: "此日期不存在。",
+                dateOrder: ['year', 'month', 'day'] // 중국식: 년/월/일
             },
             "zh-Hant": {
-                pageTitle: "輸入出生日期",
-                labelYear: "年",
-                labelMonth: "月",
-                labelDay: "日",
-                confirmButton: "確認",
+                pageTitle: "請輸入您的出生日期。",
+                description: "本遊戲僅限特定年齡以上的使用者使用。<br>請輸入準確的出生日期以驗證您使用服務的年齡。",
+                notice: "* 輸入不準確的資訊或低於服務年齡的未成年人使用可能導致帳戶被停用。",
+                inputLabel: "出生日期（年/月/日）",
+                checkboxLabel: "我已確認以上內容並輸入了準確的資訊。",
+                confirmButton: "註冊",
                 errorAllFields: "請填寫所有欄位。",
+                errorCheckbox: "請勾選確認框。",
                 errorInvalidYear: "請輸入有效的年份（1900-2100）。",
                 errorInvalidMonth: "請輸入有效的月份（1-12）。",
                 errorInvalidDay: "請輸入有效的日期（1-31）。",
-                errorInvalidDate: "此日期不存在。"
+                errorInvalidDate: "此日期不存在。",
+                dateOrder: ['year', 'month', 'day'] // 중국식: 년/월/일
             },
             es: {
-                pageTitle: "Ingrese Fecha de Nacimiento",
-                labelYear: "Año",
-                labelMonth: "Mes",
-                labelDay: "Día",
-                confirmButton: "Confirmar",
+                pageTitle: "Por favor, ingrese su fecha de nacimiento.",
+                description: "Este juego solo puede ser usado por usuarios de cierta edad o mayores.<br>Por favor, ingrese su fecha de nacimiento exacta para verificar su edad para el uso del servicio.",
+                notice: "* Ingresar información inexacta o el uso por menores de edad por debajo de la edad del servicio puede resultar en la suspensión de la cuenta.",
+                inputLabel: "Fecha de Nacimiento (Día/Mes/Año)",
+                checkboxLabel: "He verificado lo anterior e ingresado información precisa.",
+                confirmButton: "Registrar",
                 errorAllFields: "Por favor, complete todos los campos.",
+                errorCheckbox: "Por favor, marque la casilla de confirmación.",
                 errorInvalidYear: "Por favor, ingrese un año válido (1900-2100).",
                 errorInvalidMonth: "Por favor, ingrese un mes válido (1-12).",
                 errorInvalidDay: "Por favor, ingrese un día válido (1-31).",
-                errorInvalidDate: "Esta fecha no existe."
+                errorInvalidDate: "Esta fecha no existe.",
+                dateOrder: ['day', 'month', 'year'] // 스페인식: 일/월/년
             }
         };
 
@@ -275,15 +373,124 @@
 
         // DOM 요소
         const pageTitle = document.getElementById('pageTitle');
-        const labelYear = document.getElementById('labelYear');
-        const labelMonth = document.getElementById('labelMonth');
-        const labelDay = document.getElementById('labelDay');
-        const yearInput = document.getElementById('year');
-        const monthInput = document.getElementById('month');
-        const dayInput = document.getElementById('day');
+        const description = document.getElementById('description');
+        const notice = document.getElementById('notice');
+        const inputLabel = document.getElementById('inputLabel');
+        const checkboxLabel = document.getElementById('checkboxLabel');
+        const inputGroup = document.getElementById('inputGroup');
+        let daySelect, monthSelect, yearSelect;
+        const confirmCheckbox = document.getElementById('confirmCheckbox');
         const confirmButton = document.getElementById('confirmButton');
         const errorMessage = document.getElementById('errorMessage');
         const debugInfo = document.getElementById('debugInfo');
+
+        // 드롭다운 HTML 생성 (언어별 순서에 맞게)
+        function createDateInputs() {
+            const dateOrder = translations[currentLang].dateOrder;
+            inputGroup.innerHTML = '';
+
+            dateOrder.forEach(type => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'input-wrapper';
+
+                const select = document.createElement('select');
+                select.id = type;
+
+                let placeholder = '';
+                if (type === 'day') placeholder = 'DD';
+                else if (type === 'month') placeholder = 'MM';
+                else if (type === 'year') placeholder = 'YYYY';
+
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = placeholder;
+                select.appendChild(option);
+
+                const arrow = document.createElement('div');
+                arrow.className = 'select-arrow';
+
+                wrapper.appendChild(select);
+                wrapper.appendChild(arrow);
+                inputGroup.appendChild(wrapper);
+            });
+
+            // DOM 참조 업데이트
+            daySelect = document.getElementById('day');
+            monthSelect = document.getElementById('month');
+            yearSelect = document.getElementById('year');
+        }
+
+        // 드롭다운 옵션 생성
+        function populateSelects() {
+            // 일 (1-31) - 초기값
+            updateDayOptions(31);
+
+            // 월 (1-12)
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = String(i).padStart(2, '0');
+                monthSelect.appendChild(option);
+            }
+
+            // 년 (1900-현재년도+1)
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear + 1; i >= 1900; i--) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                yearSelect.appendChild(option);
+            }
+        }
+
+        // 일 드롭다운 옵션 업데이트
+        function updateDayOptions(maxDays) {
+            const currentValue = daySelect.value;
+            
+            // 기존 옵션 제거 (placeholder 제외)
+            while (daySelect.options.length > 1) {
+                daySelect.remove(1);
+            }
+
+            // 새 옵션 추가
+            for (let i = 1; i <= maxDays; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = String(i).padStart(2, '0');
+                daySelect.appendChild(option);
+            }
+
+            // 이전에 선택한 값 처리
+            if (currentValue) {
+                const currentDay = parseInt(currentValue);
+                if (currentDay <= maxDays) {
+                    // 유효한 날짜면 복원
+                    daySelect.value = currentValue;
+                } else {
+                    // 선택한 값이 새로운 최대값보다 크면 최대값으로 자동 조정
+                    daySelect.value = maxDays;
+                }
+            }
+        }
+
+        // 년도/월 변경 시 일 드롭다운 업데이트
+        function updateDaysBasedOnYearAndMonth() {
+            const year = parseInt(yearSelect.value);
+            const month = parseInt(monthSelect.value);
+
+            if (year && month) {
+                const maxDays = getDaysInMonth(year, month);
+                updateDayOptions(maxDays);
+            } else if (month) {
+                // 년도는 선택 안 했지만 월은 선택한 경우
+                // 평년 기준으로 최대 일수 설정
+                const maxDays = getDaysInMonth(2023, month); // 평년 예시
+                updateDayOptions(maxDays);
+            } else {
+                // 년도나 월이 선택되지 않았으면 31일까지 표시
+                updateDayOptions(31);
+            }
+        }
 
         // 다국어 적용
         function applyTranslations() {
@@ -291,14 +498,44 @@
             document.documentElement.lang = currentLang;
             document.title = t.pageTitle;
             pageTitle.textContent = t.pageTitle;
-            labelYear.textContent = t.labelYear;
-            labelMonth.textContent = t.labelMonth;
-            labelDay.textContent = t.labelDay;
+            description.innerHTML = t.description;
+            notice.textContent = t.notice;
+            inputLabel.textContent = t.inputLabel;
+            checkboxLabel.textContent = t.checkboxLabel;
             confirmButton.textContent = t.confirmButton;
         }
 
         // 초기화
+        createDateInputs(); // 언어별 순서로 드롭다운 생성
+        populateSelects(); // 옵션 채우기
         applyTranslations();
+
+        // 버튼 활성화 상태 업데이트
+        function updateButtonState() {
+            const hasDay = daySelect.value !== '';
+            const hasMonth = monthSelect.value !== '';
+            const hasYear = yearSelect.value !== '';
+            const isChecked = confirmCheckbox.checked;
+
+            // 모든 필드가 입력되고 체크박스도 체크되어야 활성화
+            confirmButton.disabled = !(hasDay && hasMonth && hasYear && isChecked);
+        }
+
+        // 년도/월 변경 시 일 드롭다운 업데이트
+        yearSelect.addEventListener('change', function() {
+            updateDaysBasedOnYearAndMonth();
+            updateButtonState();
+        });
+        
+        monthSelect.addEventListener('change', function() {
+            updateDaysBasedOnYearAndMonth();
+            updateButtonState();
+        });
+
+        daySelect.addEventListener('change', updateButtonState);
+
+        // 체크박스 상태에 따라 버튼 활성화/비활성화
+        confirmCheckbox.addEventListener('change', updateButtonState);
 
         // 디버그 모드
         if (isDebug) {
@@ -306,49 +543,19 @@
             debugInfo.textContent = `SDK Type: ${sdkType}, Language: ${currentLang}`;
         }
 
-        // 입력 값 자동 포맷팅
-        yearInput.addEventListener('input', function(e) {
-            if (this.value.length > 4) {
-                this.value = this.value.slice(0, 4);
-            }
-        });
+        // 윤년 체크
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
 
-        monthInput.addEventListener('input', function(e) {
-            if (this.value.length > 2) {
-                this.value = this.value.slice(0, 2);
+        // 해당 월의 최대 일수 반환
+        function getDaysInMonth(year, month) {
+            const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            if (month === 2 && isLeapYear(year)) {
+                return 29;
             }
-            if (parseInt(this.value) > 12) {
-                this.value = '12';
-            }
-        });
-
-        dayInput.addEventListener('input', function(e) {
-            if (this.value.length > 2) {
-                this.value = this.value.slice(0, 2);
-            }
-            if (parseInt(this.value) > 31) {
-                this.value = '31';
-            }
-        });
-
-        // Enter 키로 다음 필드로 이동
-        yearInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.length === 4) {
-                monthInput.focus();
-            }
-        });
-
-        monthInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.length > 0) {
-                dayInput.focus();
-            }
-        });
-
-        dayInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.length > 0) {
-                confirmButton.click();
-            }
-        });
+            return daysInMonth[month - 1];
+        }
 
         // 유효성 검사
         function validateDate(year, month, day) {
@@ -356,6 +563,10 @@
 
             if (!year || !month || !day) {
                 return t.errorAllFields;
+            }
+
+            if (!confirmCheckbox.checked) {
+                return t.errorCheckbox;
             }
 
             const yearNum = parseInt(year);
@@ -374,7 +585,13 @@
                 return t.errorInvalidDay;
             }
 
-            // 실제 날짜 유효성 검사
+            // 해당 월의 최대 일수 체크 (윤년 포함)
+            const maxDays = getDaysInMonth(yearNum, monthNum);
+            if (dayNum > maxDays) {
+                return t.errorInvalidDate;
+            }
+
+            // 실제 날짜 유효성 검사 (추가 안전장치)
             const date = new Date(yearNum, monthNum - 1, dayNum);
             if (date.getFullYear() !== yearNum || 
                 date.getMonth() !== monthNum - 1 || 
@@ -387,8 +604,8 @@
 
         // YYYYMMDD 형식으로 변환
         function formatBirthDate(year, month, day) {
-            const paddedMonth = month.padStart(2, '0');
-            const paddedDay = day.padStart(2, '0');
+            const paddedMonth = String(month).padStart(2, '0');
+            const paddedDay = String(day).padStart(2, '0');
             return `${year}${paddedMonth}${paddedDay}`;
         }
 
@@ -454,9 +671,9 @@
         confirmButton.addEventListener('click', function() {
             errorMessage.textContent = '';
 
-            const year = yearInput.value.trim();
-            const month = monthInput.value.trim();
-            const day = dayInput.value.trim();
+            const day = daySelect.value;
+            const month = monthSelect.value;
+            const year = yearSelect.value;
 
             const error = validateDate(year, month, day);
             if (error) {
@@ -466,11 +683,6 @@
 
             const birthDate = formatBirthDate(year, month, day);
             sendResultToNative(birthDate);
-        });
-
-        // 페이지 로드 시 년도 입력에 포커스
-        window.addEventListener('load', function() {
-            yearInput.focus();
         });
     </script>
 </body>
