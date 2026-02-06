@@ -364,12 +364,19 @@
         // URL 파라미터 가져오기
         const urlParams = new URLSearchParams(window.location.search);
         const sdkType = urlParams.get('sdkType') || 'android';
-        const lang = urlParams.get('lang') || 'en';
+        const langParam = urlParams.get('lang') || 'en';
         const isDebug = urlParams.get('debug') === 'true';
 
         // 지원하는 언어 목록
         const supportedLanguages = ['en', 'ko', 'ja', 'pt', 'ru', 'th', 'zh-Hans', 'zh-Hant', 'es'];
-        const currentLang = supportedLanguages.includes(lang) ? lang : 'en';
+        
+        // 대소문자 구분 없이 언어 매칭
+        function findLanguage(input) {
+            const lowerInput = input.toLowerCase();
+            return supportedLanguages.find(lang => lang.toLowerCase() === lowerInput) || 'en';
+        }
+        
+        const currentLang = findLanguage(langParam);
 
         // DOM 요소
         const pageTitle = document.getElementById('pageTitle');
