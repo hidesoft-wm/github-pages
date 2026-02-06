@@ -25,15 +25,15 @@
             background: white;
             border-radius: 0;
             box-shadow: none;
-            padding: 60px 40px;
+            padding: 40px 40px;
             width: 100%;
-            max-width: 600px; /* PC에서 최대 너비 제한 */
+            max-width: 800px; /* PC에서 최대 너비 제한 */
         }
 
         h1 {
             font-size: 28px;
             color: #000;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             text-align: center;
             font-weight: 700;
         }
@@ -48,7 +48,7 @@
         .notice {
             font-size: 13px;
             color: #666;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             line-height: 1.6;
         }
 
@@ -62,7 +62,7 @@
         .input-group {
             display: flex;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .input-wrapper {
@@ -104,7 +104,7 @@
         .checkbox-wrapper {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .checkbox-wrapper input[type="checkbox"] {
@@ -121,14 +121,6 @@
             color: #333;
             cursor: pointer;
             user-select: none;
-        }
-
-        .error-message {
-            color: #ff3b30;
-            font-size: 14px;
-            margin-bottom: 20px;
-            text-align: center;
-            min-height: 20px;
         }
 
         button {
@@ -170,8 +162,8 @@
         /* 태블릿 */
         @media (max-width: 768px) {
             .container {
-                max-width: 500px;
-                padding: 50px 30px;
+                max-width: 700px;
+                padding: 35px 30px;
             }
 
             h1 {
@@ -201,13 +193,13 @@
 
             .container {
                 max-width: 100%;
-                padding: 40px 20px;
+                padding: 30px 20px;
                 border-radius: 0;
             }
 
             h1 {
                 font-size: 24px;
-                margin-bottom: 30px;
+                margin-bottom: 25px;
             }
 
             .description {
@@ -216,7 +208,7 @@
 
             .notice {
                 font-size: 12px;
-                margin-bottom: 30px;
+                margin-bottom: 25px;
             }
 
             .input-label {
@@ -280,8 +272,6 @@
             <input type="checkbox" id="confirmCheckbox">
             <label for="confirmCheckbox" id="checkboxLabel">I have verified the above and entered accurate information.</label>
         </div>
-
-        <div class="error-message" id="errorMessage"></div>
 
         <button id="confirmButton" disabled>Register</button>
 
@@ -465,7 +455,6 @@
         let daySelect, monthSelect, yearSelect;
         const confirmCheckbox = document.getElementById('confirmCheckbox');
         const confirmButton = document.getElementById('confirmButton');
-        const errorMessage = document.getElementById('errorMessage');
         const debugInfo = document.getElementById('debugInfo');
 
         // 드롭다운 HTML 생성 (언어별 순서에 맞게)
@@ -753,15 +742,13 @@
 
         // 확인 버튼 클릭
         confirmButton.addEventListener('click', function() {
-            errorMessage.textContent = '';
-
             const day = daySelect.value;
             const month = monthSelect.value;
             const year = yearSelect.value;
 
             const error = validateDate(year, month, day);
             if (error) {
-                errorMessage.textContent = error;
+                // 에러가 있으면 그냥 반환 (UI에 표시하지 않음)
                 return;
             }
 
