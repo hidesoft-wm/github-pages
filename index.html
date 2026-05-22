@@ -19,6 +19,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            outline: none;
         }
 
         .container {
@@ -391,7 +392,7 @@
         }
     </style>
 </head>
-<body>
+<body tabindex="0">
     <button class="close-button" id="closeButton" aria-label="Close"></button>
     
     <div class="container">
@@ -770,6 +771,9 @@
         createDateInputs(); // 언어별 순서로 드롭다운 생성
         populateSelects(); // 옵션 채우기
         applyTranslations();
+
+        // 페이지 로드 시 body에 포커스 설정 (ESC 키 감지를 위해)
+        document.body.focus();
 
         // 버튼 활성화 상태 업데이트
         function updateButtonState() {
