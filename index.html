@@ -1001,6 +1001,23 @@
                 if (isDebug) alert('Error: ' + error.message + '\n' + jsonString);
             }
         });
+
+        // ESC 키 이벤트 리스너
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                try {
+                    if (window.ue && window.ue.web && window.ue.web.action) {
+                        window.ue.web.action('close_window');
+                    } else {
+                        console.error('Unreal ue.web.action not found');
+                        if (isDebug) alert('Unreal ue.web.action not found');
+                    }
+                } catch (error) {
+                    console.error('Error calling ue.web.action:', error);
+                    if (isDebug) alert('Error calling ue.web.action: ' + error.message);
+                }
+            }
+        });
     </script>
 </body>
 </html>
