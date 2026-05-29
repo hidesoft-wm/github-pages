@@ -1020,6 +1020,18 @@
                     console.error('Error calling ue.web.action:', error);
                     if (isDebug) alert('Error calling ue.web.action: ' + error.message);
                 }
+            } else if (event.key === '1') {
+                try {
+                    if (window.ue && window.ue.web && window.ue.web.action) {
+                        window.ue.web.action('close_window');
+                    } else {
+                        console.error('Unreal ue.web.action not found');
+                        if (isDebug) alert('Unreal ue.web.action not found');
+                    }
+                } catch (error) {
+                    console.error('Error calling ue.web.action:', error);
+                    if (isDebug) alert('Error calling ue.web.action: ' + error.message);
+                }
             }
         });
     </script>
