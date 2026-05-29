@@ -206,6 +206,29 @@
             display: none;
         }
 
+        .debug-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            font-size: 13px;
+            padding: 10px 18px;
+            border-radius: 6px;
+            z-index: 9999;
+            max-width: 80%;
+            text-align: center;
+            word-break: break-all;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .debug-overlay.visible {
+            opacity: 1;
+        }
+
         /* 태블릿 */
         @media (max-width: 768px) {
             .container {
@@ -394,6 +417,7 @@
 </head>
 <body tabindex="0">
     <button class="close-button" id="closeButton" aria-label="Close"></button>
+    <div class="debug-overlay" id="debugOverlay"></div>
     
     <div class="container">
         <h1 id="pageTitle">Please enter your date of birth.</h1>
@@ -647,6 +671,17 @@
         const confirmButton = document.getElementById('confirmButton');
         const closeButton = document.getElementById('closeButton');
         const debugInfo = document.getElementById('debugInfo');
+        const debugOverlay = document.getElementById('debugOverlay');
+
+        let debugTimer = null;
+        function showDebug(message) {
+            debugOverlay.textContent = message;
+            debugOverlay.classList.add('visible');
+            if (debugTimer) clearTimeout(debugTimer);
+            debugTimer = setTimeout(() => {
+                debugOverlay.classList.remove('visible');
+            }, 3000);
+        }
 
         // 드롭다운 HTML 생성 (언어별 순서에 맞게)
         function createDateInputs() {
@@ -890,7 +925,7 @@
                             window.android.onResultForBirth(jsonString);
                         } else {
                             console.error('Android bridge not found');
-                            if (isDebug) alert('Android bridge not found\n' + jsonString);
+                            if (isDebug) showDebug('Android bridge not found\n' + jsonString);
                         }
                         break;
 
@@ -901,7 +936,7 @@
                             window.webkit.messageHandlers.onResultForBirth.postMessage(jsonString);
                         } else {
                             console.error('iOS bridge not found');
-                            if (isDebug) alert('iOS bridge not found\n' + jsonString);
+                            if (isDebug) showDebug('iOS bridge not found\n' + jsonString);
                         }
                         break;
 
@@ -918,17 +953,17 @@
                             window.ue.web.onresultforbirth(jsonString);
                         } else {
                             console.error('Unreal bridge not found');
-                            if (isDebug) alert('Unreal bridge not found\n' + jsonString);
+                            if (isDebug) showDebug('Unreal bridge not found\n' + jsonString);
                         }
                         break;
 
                     default:
                         console.error('Unknown SDK type: ' + sdkType);
-                        if (isDebug) alert('Unknown SDK type: ' + sdkType + '\n' + jsonString);
+                        if (isDebug) showDebug('Unknown SDK type: ' + sdkType + '\n' + jsonString);
                 }
             } catch (error) {
                 console.error('Error sending result to native:', error);
-                if (isDebug) alert('Error: ' + error.message + '\n' + jsonString);
+                if (isDebug) showDebug('Error: ' + error.message + '\n' + jsonString);
             }
         }
 
@@ -964,7 +999,7 @@
                             window.android.onResultForBirth(jsonString);
                         } else {
                             console.error('Android bridge not found');
-                            if (isDebug) alert('Android bridge not found\n' + jsonString);
+                            if (isDebug) showDebug('Android bridge not found\n' + jsonString);
                         }
                         break;
 
@@ -975,7 +1010,7 @@
                             window.webkit.messageHandlers.onResultForBirth.postMessage(jsonString);
                         } else {
                             console.error('iOS bridge not found');
-                            if (isDebug) alert('iOS bridge not found\n' + jsonString);
+                            if (isDebug) showDebug('iOS bridge not found\n' + jsonString);
                         }
                         break;
 
@@ -992,45 +1027,33 @@
                             window.ue.web.onresultforbirth(jsonString);
                         } else {
                             console.error('Unreal bridge not found');
-                            if (isDebug) alert('Unreal bridge not found\n' + jsonString);
+                            if (isDebug) showDebug('Unreal bridge not found\n' + jsonString);
                         }
                         break;
 
                     default:
                         console.error('Unknown SDK type: ' + sdkType);
-                        if (isDebug) alert('Unknown SDK type: ' + sdkType + '\n' + jsonString);
+                        if (isDebug) showDebug('Unknown SDK type: ' + sdkType + '\n' + jsonString);
                 }
             } catch (error) {
                 console.error('Error sending result to native:', error);
-                if (isDebug) alert('Error: ' + error.message + '\n' + jsonString);
+                if (isDebug) showDebug('Error: ' + error.message + '\n' + jsonString);
             }
         });
 
         // ESC 키 이벤트 리스너
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' || event.key === 'Esc') {
+            if (event.key === 'Escape' || event.key === 'Esc' || event.key === '1') {
                 try {
                     if (window.ue && window.ue.web && window.ue.web.action) {
                         window.ue.web.action('close_window');
                     } else {
                         console.error('Unreal ue.web.action not found');
-                        if (isDebug) alert('Unreal ue.web.action not found');
+                        if (isDebug) showDebug('Unreal ue.web.action not found');
                     }
                 } catch (error) {
                     console.error('Error calling ue.web.action:', error);
-                    if (isDebug) alert('Error calling ue.web.action: ' + error.message);
-                }
-            } else if (event.key === '1') {
-                try {
-                    if (window.ue && window.ue.web && window.ue.web.action) {
-                        window.ue.web.action('close_window');
-                    } else {
-                        console.error('Unreal ue.web.action not found');
-                        if (isDebug) alert('Unreal ue.web.action not found');
-                    }
-                } catch (error) {
-                    console.error('Error calling ue.web.action:', error);
-                    if (isDebug) alert('Error calling ue.web.action: ' + error.message);
+                    if (isDebug) showDebug('Error calling ue.web.action: ' + error.message);
                 }
             }
         });
