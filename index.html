@@ -159,7 +159,6 @@
             height: 19px;
             margin-right: 7px;
             cursor: pointer;
-            accent-color: #666;
             flex-shrink: 0;
         }
 
@@ -940,13 +939,14 @@
                         }
                         break;
 
-                    case 'unity':
-                        const parameters = {
+                    case 'unity': {
+                        var unityParams = {
                             method: "onResultForBirth",
                             data: jsonString
                         };
-                        window.alert(JSON.stringify(parameters));
+                        window.alert(JSON.stringify(unityParams));
                         break;
+                    }
 
                     case 'unreal':
                         if (window.ue && window.ue.web && window.ue.web.onresultforbirth) {
@@ -1014,13 +1014,14 @@
                         }
                         break;
 
-                    case 'unity':
-                        const parameters = {
+                    case 'unity': {
+                        var unityParams = {
                             method: "onResultForBirth",
                             data: jsonString
                         };
-                        window.alert(JSON.stringify(parameters));
+                        window.alert(JSON.stringify(unityParams));
                         break;
+                    }
 
                     case 'unreal':
                         if (window.ue && window.ue.web && window.ue.web.onresultforbirth) {
