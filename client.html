@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameStreaming</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; color: #eee; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* ── 상단 바 ── */
+  #toolbar {
+    width: 100%; padding: 6px 12px; background: #1e1e1e;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    border-bottom: 1px solid #333;
+  }
+  #toolbar label { font-size: 12px; color: #9ca3af; white-space: nowrap; }
+
+  /* 서버 목록 드롭다운 */
+  #serverSelect {
+    padding: 4px 8px; background: #2a2a2a; border: 1px solid #444;
+    color: #eee; border-radius: 4px; font-size: 13px; cursor: pointer; min-width: 180px;
+  }
+  /* 모드 뱃지 */
+  #modeBadge {
+    padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold;
+    white-space: nowrap;
+  }
+  .badge-control { background: #1d4ed8; color: #fff; }
+  .badge-view    { background: #374151; color: #9ca3af; }
+
+  /* 연결 버튼 */
+  button { padding: 5px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  #btnConnect    { background: #2563eb; color: #fff; }
+  #btnConnect:hover { background: #1d4ed8; }
+  #btnFullscreen { background: #374151; color: #eee; }
+  #btnAddServer  { background: #374151; color: #eee; }
+
+  /* 상태 */
+  #status { font-size: 13px; color: #9ca3af; margin-left: auto; white-space: nowrap; }
+
+  /* 서버 관리 패널 */
+  #serverPanel {
+    display: none; position: absolute; top: 38px; left: 12px; z-index: 100;
+    background: #1e1e1e; border: 1px solid #444; border-radius: 6px;
+    padding: 10px; min-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  #serverPanel h3 { font-size: 13px; color: #9ca3af; margin-bottom: 8px; }
+  #serverList { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .server-row {
+    display: flex; align-items: center; gap: 6px;
+    background: #2a2a2a; padding: 6px 8px; border-radius: 4px;
+  }
+  .server-row .s-name { flex: 1; font-size: 13px; }
+  .server-row .s-url  { font-size: 11px; color: #6b7280; flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .server-row .s-mine { font-size: 11px; color: #fbbf24; }
+  .s-del { background: #7f1d1d; color: #fca5a5; font-size: 11px; padding: 2px 6px; }
+  .s-del:hover { background: #991b1b; }
+  #addForm { display: flex; gap: 6px; }
+  #addForm input {
+    flex: 1; padding: 4px 8px; background: #2a2a2a; border: 1px solid #444;
+    color: #eee; border-radius: 4px; font-size: 12px;
+  }
+  #addForm button { background: #059669; color: #fff; font-size: 12px; }
+
+  /* ── 영상 영역 ── */
+  #videoWrap {
+    flex: 1; width: 100%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    background: #000;
+  }
+  video { width: 100%; height: 100%; object-fit: contain; outline: none; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <label>서버</label>
+  <select id="serverSelect" onchange="onServerChange()"></select>
+  <span id="modeBadge" class="badge-control">CONTROL</span>
+  <button id="btnConnect" onclick="toggleConnect()">연결</button>
+  <button id="btnFullscreen" onclick="goFullscreen()">전체화면</button>
+  <button id="btnAddServer" onclick="toggleServerPanel()">서버 관리</button>
+  <span id="encoderBadge" style="display:none; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:bold; white-space:nowrap;"></span>
+  <span id="status">대기 중</span>
+</div>
+
+<!-- 서버 관리 패널 -->
+<div id="serverPanel">
+  <h3>서버 목록 관리</h3>
+  <div id="serverList"></div>
+  <div id="addForm">
+    <input id="addName" placeholder="이름 (예: 내 PC)" />
+    <input id="addUrl"  placeholder="ws://192.168.x.x:8081/" />
+    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:#9ca3af;">
+      <input type="checkbox" id="addIsMine"> 내 PC
+    </label>
+    <button onclick="addServer()">추가</button>
+  </div>
+</div>
+
+<div id="videoWrap">
+  <video id="video" autoplay playsinline muted tabindex="0"></video>
+</div>
+
+<script>
+// ── 서버 목록 (localStorage 영속) ──────────────────────────────────────────────
+const STORAGE_KEY = 'gs_servers';
+
+function loadServers() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function saveServers(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+let servers = loadServers();
+
+// 서버가 없으면 기본값 삽입
+if (servers.length === 0) {
+  servers = [{ name: '내 PC (기본)', url: 'ws://127.0.0.1:8081/', isMine: true }];
+  saveServers(servers);
+}
+
+function renderServerSelect() {
+  const sel = document.getElementById('serverSelect');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  servers.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.name + (s.isMine ? ' ★' : '');
+    sel.appendChild(opt);
+  });
+  // 이전 선택 복원
+  if (prev !== '' && prev < servers.length) sel.value = prev;
+  updateModeBadge();
+}
+
+function renderServerPanel() {
+  const list = document.getElementById('serverList');
+  list.innerHTML = '';
+  servers.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'server-row';
+    row.innerHTML = `
+      <span class="s-name">${s.name}</span>
+      <span class="s-url">${s.url}</span>
+      ${s.isMine ? '<span class="s-mine">★내PC</span>' : ''}
+      <button class="s-del" onclick="removeServer(${i})">삭제</button>`;
+    list.appendChild(row);
+  });
+}
+
+function updateModeBadge() {
+  const sel = document.getElementById('serverSelect');
+  const idx = parseInt(sel.value);
+  const s = servers[idx];
+  const badge = document.getElementById('modeBadge');
+  if (s?.isMine) {
+    badge.textContent = 'CONTROL';
+    badge.className = 'badge-control';
+  } else {
+    badge.textContent = 'VIEW ONLY';
+    badge.className = 'badge-view';
+  }
+}
+
+function onServerChange() {
+  updateModeBadge();
+  updateConnectButton();
+}
+
+function toggleServerPanel() {
+  const panel = document.getElementById('serverPanel');
+  if (panel.style.display === 'block') {
+    panel.style.display = 'none';
+  } else {
+    renderServerPanel();
+    panel.style.display = 'block';
+  }
+}
+
+function addServer() {
+  const name   = document.getElementById('addName').value.trim();
+  const url    = document.getElementById('addUrl').value.trim();
+  const isMine = document.getElementById('addIsMine').checked;
+  if (!name || !url) return;
+  servers.push({ name, url, isMine });
+  saveServers(servers);
+  renderServerSelect();
+  renderServerPanel();
+  document.getElementById('addName').value = '';
+  document.getElementById('addUrl').value  = '';
+}
+
+function removeServer(idx) {
+  servers.splice(idx, 1);
+  saveServers(servers);
+  renderServerSelect();
+  renderServerPanel();
+}
+
+// 패널 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  const panel = document.getElementById('serverPanel');
+  if (panel.style.display === 'block'
+      && !panel.contains(e.target)
+      && e.target.id !== 'btnAddServer') {
+    panel.style.display = 'none';
+  }
+});
+
+// ── WebRTC 연결 ───────────────────────────────────────────────────────────────
+let pc = null;
+let ws = null;
+let pendingCandidates = [];
+let moveChannel        = null;
+let reliableChannel    = null;
+let reconnectTimer     = null;
+let isConnecting       = false;
+let lastMoveTime       = 0;
+let connectedServerIdx = -1; // 현재 연결된 서버 인덱스 (-1 = 미연결)
+const MOVE_THROTTLE_MS = 16;
+
+const CODE_TO_VK = {
+  'KeyA':0x41,'KeyB':0x42,'KeyC':0x43,'KeyD':0x44,'KeyE':0x45,'KeyF':0x46,
+  'KeyG':0x47,'KeyH':0x48,'KeyI':0x49,'KeyJ':0x4A,'KeyK':0x4B,'KeyL':0x4C,
+  'KeyM':0x4D,'KeyN':0x4E,'KeyO':0x4F,'KeyP':0x50,'KeyQ':0x51,'KeyR':0x52,
+  'KeyS':0x53,'KeyT':0x54,'KeyU':0x55,'KeyV':0x56,'KeyW':0x57,'KeyX':0x58,
+  'KeyY':0x59,'KeyZ':0x5A,
+  'Digit0':0x30,'Digit1':0x31,'Digit2':0x32,'Digit3':0x33,'Digit4':0x34,
+  'Digit5':0x35,'Digit6':0x36,'Digit7':0x37,'Digit8':0x38,'Digit9':0x39,
+  'F1':0x70,'F2':0x71,'F3':0x72,'F4':0x73,'F5':0x74,'F6':0x75,
+  'F7':0x76,'F8':0x77,'F9':0x78,'F10':0x79,'F11':0x7A,'F12':0x7B,
+  'Enter':0x0D,'NumpadEnter':0x0D,'Escape':0x1B,'Space':0x20,
+  'Backspace':0x08,'Tab':0x09,'Delete':0x2E,'Insert':0x2D,
+  'Home':0x24,'End':0x23,'PageUp':0x21,'PageDown':0x22,
+  'ArrowLeft':0x25,'ArrowUp':0x26,'ArrowRight':0x27,'ArrowDown':0x28,
+  'ShiftLeft':0x10,'ShiftRight':0x10,'ControlLeft':0x11,'ControlRight':0x11,
+  'AltLeft':0x12,'AltRight':0x12,
+  'Minus':0xBD,'Equal':0xBB,'BracketLeft':0xDB,'BracketRight':0xDD,
+  'Semicolon':0xBA,'Quote':0xDE,'Backquote':0xC0,'Backslash':0xDC,
+  'Comma':0xBC,'Period':0xBE,'Slash':0xBF,
+  'HangulMode':0x15,'Lang1':0x15,
+  'Hanja':0x19,'Lang2':0x19,
+  'CapsLock':0x14,'NumLock':0x90,'ScrollLock':0x91,
+  'PrintScreen':0x2C,'Pause':0x13,
+};
+
+function setStatus(msg, color) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.style.color = color || '#9ca3af';
+}
+
+function selectedServerIdx() {
+  return parseInt(document.getElementById('serverSelect').value);
+}
+function currentServer() {
+  return servers[selectedServerIdx()] ?? servers[0];
+}
+
+// 버튼 텍스트: 미연결→"연결" / 연결됨+같은서버→"연결 끊기" / 연결됨+다른서버→"전환"
+function updateConnectButton() {
+  const btn = document.getElementById('btnConnect');
+  if (!pc && !isConnecting) {
+    btn.textContent = '연결';
+    btn.style.background = '#2563eb';
+  } else if (connectedServerIdx === selectedServerIdx()) {
+    btn.textContent = '연결 끊기';
+    btn.style.background = '#dc2626';
+  } else {
+    btn.textContent = '전환';
+    btn.style.background = '#d97706';
+  }
+}
+
+async function toggleConnect() {
+  if (!pc && !isConnecting) {
+    await connect();
+  } else if (connectedServerIdx === selectedServerIdx()) {
+    disconnect();
+  } else {
+    // 다른 서버로 전환: 기존 끊고 즉시 새 서버 연결
+    disconnectSilent();
+    await connect();
+  }
+}
+
+// 재연결 타이머 없이 조용히 끊기 (전환 시 사용)
+function disconnectSilent() {
+  clearTimeout(reconnectTimer);
+  isConnecting = false;
+  unbindInputEvents();
+  releaseModifiers();
+  pc?.close(); pc = null;
+  ws?.close(); ws = null;
+  pendingCandidates = [];
+  moveChannel = null; reliableChannel = null;
+  connectedServerIdx = -1;
+  document.getElementById('video').srcObject = null;
+  document.getElementById('encoderBadge').style.display = 'none';
+}
+
+async function connect() {
+  if (isConnecting) return;
+  isConnecting = true;
+  clearTimeout(reconnectTimer);
+
+  const idx  = selectedServerIdx();
+  const srv  = servers[idx] ?? servers[0];
+  const mode = srv.isMine ? 'control' : 'view';
+  const wsUrl = srv.url.replace(/\/?$/, '') + `/?mode=${mode}`;
+
+  setStatus('연결 중...', '#fbbf24');
+  updateConnectButton();
+
+  pc = new RTCPeerConnection({ iceServers: [] });
+
+  pc.ontrack = e => {
+    document.getElementById('video').srcObject = e.streams[0];
+    setStatus(`스트리밍 중 (${mode})`, '#34d399');
+  };
+
+  // control 모드일 때만 DataChannel 수신
+  if (mode === 'control') {
+    pc.ondatachannel = e => {
+      const ch = e.channel;
+      if (ch.label === 'mouse-move')       moveChannel     = ch;
+      else if (ch.label === 'input-reliable') reliableChannel = ch;
+    };
+  }
+
+  pc.onicecandidate = e => {
+    if (e.candidate && ws?.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify(e.candidate));
+  };
+
+  pc.onconnectionstatechange = () => {
+    const s = pc.connectionState;
+    if (s === 'connected') {
+      isConnecting = false;
+      connectedServerIdx = idx;
+      setStatus(`연결됨 (${mode})`, '#34d399');
+      updateConnectButton();
+      if (mode === 'control') bindInputEvents();
+    } else if (s === 'failed' || s === 'disconnected') {
+      setStatus('재연결 대기...', '#fbbf24');
+      unbindInputEvents();
+      releaseModifiers();
+      scheduleReconnect();
+    }
+  };
+
+  ws = new WebSocket(wsUrl);
+  ws.onopen  = () => setStatus('WS 연결됨, ICE 협상 중...', '#fbbf24');
+  ws.onerror = () => setStatus('WebSocket 오류', '#f87171');
+  ws.onclose = () => {
+    isConnecting = false;
+    if (pc) scheduleReconnect();
+  };
+
+  ws.onmessage = async e => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'offer') {
+      await pc.setRemoteDescription(new RTCSessionDescription(msg));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      ws.send(JSON.stringify(answer));
+      for (const c of pendingCandidates)
+        await pc.addIceCandidate(new RTCIceCandidate(c)).catch(console.warn);
+      pendingCandidates = [];
+    } else if (msg.type === 'answer') {
+      await pc.setRemoteDescription(new RTCSessionDescription(msg));
+    } else if (msg.type === 'serverInfo') {
+      showEncoderBadge(msg.encoder, msg.isGpu);
+    } else if (msg.type === 'icecandidate') {
+      const raw = msg.candidate ?? msg;
+      if (raw?.candidate) {
+        if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(raw)).catch(console.warn);
+        else pendingCandidates.push(raw);
+      }
+    } else if (msg.candidate) {
+      if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(msg)).catch(console.warn);
+      else pendingCandidates.push(msg);
+    }
+  };
+}
+
+function showEncoderBadge(name, isGpu) {
+  const b = document.getElementById('encoderBadge');
+  b.textContent = isGpu ? `GPU: ${name}` : `CPU: ${name}`;
+  b.style.background = isGpu ? '#065f46' : '#1e3a5f';
+  b.style.color      = isGpu ? '#6ee7b7' : '#93c5fd';
+  b.style.display    = 'inline-block';
+}
+
+function disconnect() {
+  clearTimeout(reconnectTimer);
+  isConnecting = false;
+  connectedServerIdx = -1;
+  unbindInputEvents();
+  releaseModifiers();
+  pc?.close(); pc = null;
+  ws?.close(); ws = null;
+  pendingCandidates = [];
+  moveChannel = null; reliableChannel = null;
+  document.getElementById('video').srcObject = null;
+  document.getElementById('encoderBadge').style.display = 'none';
+  updateConnectButton();
+  setStatus('연결 끊김');
+}
+
+function scheduleReconnect() {
+  const reconnIdx = connectedServerIdx; // 재연결 대상 서버 기억
+  pc?.close(); pc = null;
+  ws?.close(); ws = null;
+  pendingCandidates = [];
+  moveChannel = null; reliableChannel = null;
+  connectedServerIdx = -1;
+  document.getElementById('video').srcObject = null;
+  updateConnectButton();
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(() => {
+    if (!pc) {
+      // 드롭다운이 바뀌지 않은 경우에만 재연결 (전환 중이면 connect()가 별도 처리)
+      if (selectedServerIdx() === reconnIdx || reconnIdx === -1) connect();
+    }
+  }, 3000);
+  setStatus('3초 후 재연결...', '#fbbf24');
+}
+
+// ── 입력 이벤트 바인딩 (control 모드에서만) ──────────────────────────────────
+function bindInputEvents() {
+  const video = document.getElementById('video');
+  video.addEventListener('mousemove',   onMouseMove,  { passive: true });
+  video.addEventListener('mousedown',   onMouseDown);
+  video.addEventListener('mouseup',     onMouseUp);
+  video.addEventListener('wheel',       onWheel,      { passive: true });
+  video.addEventListener('contextmenu', onContextMenu);
+  window.addEventListener('keydown',    onKeyDown);
+  window.addEventListener('keyup',      onKeyUp);
+  window.addEventListener('blur',       releaseModifiers);
+}
+
+function unbindInputEvents() {
+  const video = document.getElementById('video');
+  video.removeEventListener('mousemove',   onMouseMove);
+  video.removeEventListener('mousedown',   onMouseDown);
+  video.removeEventListener('mouseup',     onMouseUp);
+  video.removeEventListener('wheel',       onWheel);
+  video.removeEventListener('contextmenu', onContextMenu);
+  window.removeEventListener('keydown',    onKeyDown);
+  window.removeEventListener('keyup',      onKeyUp);
+  window.removeEventListener('blur',       releaseModifiers);
+}
+
+function ratio(e) {
+  const r = e.currentTarget.getBoundingClientRect();
+  return {
+    x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
+    y: Math.max(0, Math.min(1, (e.clientY - r.top)  / r.height))
+  };
+}
+function sendMove(ch, data) {
+  if (ch?.readyState === 'open') ch.send(JSON.stringify(data));
+}
+function onContextMenu(e) { e.preventDefault(); }
+function onMouseMove(e) {
+  const now = performance.now();
+  if (now - lastMoveTime < MOVE_THROTTLE_MS) return;
+  lastMoveTime = now;
+  const { x, y } = ratio(e);
+  sendMove(moveChannel, { type: 'mousemove', x, y });
+}
+function onMouseDown(e) {
+  e.preventDefault();
+  const { x, y } = ratio(e);
+  sendMove(reliableChannel, { type: 'mousedown', x, y, button: e.button });
+}
+function onMouseUp(e) {
+  const { x, y } = ratio(e);
+  sendMove(reliableChannel, { type: 'mouseup', x, y, button: e.button });
+}
+function onWheel(e) {
+  sendMove(reliableChannel, { type: 'wheel', delta: Math.round(e.deltaY) });
+}
+const MODIFIER_VKS = [0x10, 0x11, 0x12];
+function onKeyDown(e) {
+  if (e.ctrlKey && ['w','t','n','r'].includes(e.key.toLowerCase())) return;
+  if (e.isComposing && !MODIFIER_VKS.includes(CODE_TO_VK[e.code])) return;
+  e.preventDefault();
+  const vk = CODE_TO_VK[e.code];
+  if (vk) sendMove(reliableChannel, { type: 'keydown', vk });
+}
+function onKeyUp(e) {
+  e.preventDefault();
+  const vk = CODE_TO_VK[e.code];
+  if (vk) sendMove(reliableChannel, { type: 'keyup', vk });
+}
+function releaseModifiers() {
+  for (const vk of MODIFIER_VKS)
+    sendMove(reliableChannel, { type: 'keyup', vk });
+}
+function goFullscreen() {
+  const v = document.getElementById('video');
+  (v.requestFullscreen || v.webkitRequestFullscreen || v.mozRequestFullScreen).call(v);
+}
+
+// ── 초기화 ────────────────────────────────────────────────────────────────────
+renderServerSelect();
+updateConnectButton();
+</script>
+</body>
+</html>
