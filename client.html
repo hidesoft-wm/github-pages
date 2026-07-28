@@ -119,7 +119,7 @@ let servers = loadServers();
 
 // 서버가 없으면 기본값 삽입
 if (servers.length === 0) {
-  servers = [{ name: '내 PC (기본)', url: 'ws://127.0.0.1:8081/', isMine: true }];
+  servers = [{ name: '내 PC (기본)', url: 'wss://172.20.43.126:8081/', isMine: true }];
   saveServers(servers);
 }
 
